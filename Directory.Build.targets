@@ -1,0 +1,5 @@
+<Project>
+	<!-- テンプレート側設定項目 -->
+	<Import Project="Directory.Build.targets.mod-template" />
+	<!-- 以下 Mod 開発者側設定項目 -->
+</Project>
