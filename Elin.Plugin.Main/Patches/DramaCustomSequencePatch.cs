@@ -8,13 +8,35 @@ namespace Elin.Plugin.Main.Patches
     {
         #region function
 
-        [HarmonyPatch(nameof(DramaCustomSequence.Choice2), new[] { typeof(string), typeof(string) })]
+        [HarmonyPatch(nameof(DramaCustomSequence.Build), new[] { typeof(Chara) })]
         [HarmonyPrefix]
-        public static bool Choice2Prefix(DramaCustomSequence __instance, string lang, string idJump)
+        public static bool BuildPrefix(DramaCustomSequence __instance, Chara c)
         {
-            return DramaCustomSequenceImpl.Choice2Prefix(__instance, lang, idJump);
+            return DramaCustomSequenceImpl.BuildPrefix(__instance, c);
         }
 
+
+        [HarmonyPatch(nameof(DramaCustomSequence.Build), new[] { typeof(Chara) })]
+        [HarmonyPostfix]
+        public static void BuildPostfix(DramaCustomSequence __instance, Chara c)
+        {
+            DramaCustomSequenceImpl.BuildPostfix(__instance, c);
+        }
+
+
+        [HarmonyPatch(nameof(DramaCustomSequence.Choice2), new[] { typeof(string), typeof(string) })]
+        [HarmonyPrefix]
+        public static bool Choice2Prefix(DramaCustomSequence __instance, string lang, ref string idJump)
+        {
+            return DramaCustomSequenceImpl.Choice2Prefix(__instance, lang, ref idJump);
+        }
+
+        [HarmonyPatch(nameof(DramaCustomSequence.Choice), new[] { typeof(string), typeof(string), typeof(bool) })]
+        [HarmonyPrefix]
+        public static bool ChoicePrefix(DramaCustomSequence __instance, string lang, string idJump, bool cancel)
+        {
+            return DramaCustomSequenceImpl.ChoicePrefix(__instance, lang, idJump, cancel);
+        }
         #endregion
     }
 }

@@ -48,7 +48,7 @@ Step("_factionOther");
 //DramaCustomSequence.cs
 else if (!c.noMove)
 {
-	Choice("disableMove", "_disableMove");
+ Choice("disableMove", "_disableMove");
 }
 
 Step("_disableMove");
