@@ -30,6 +30,12 @@ namespace Elin.Plugin.Main.Models.Impl
             /// <para>とりあえずこのクラスに突っ込んでおく。</para>
             /// </remarks>
             public const string What = "what";
+
+            /// <summary>
+            /// さようなら。
+            /// </summary>
+            /// <remarks>Lang!General: bye</remarks>
+            public const string Bye = "bye";
         }
 
         private static class JumpId
@@ -93,6 +99,18 @@ namespace Elin.Plugin.Main.Models.Impl
 
         #region function
 
+        private static bool CanInvite(Chara c)
+        {
+            // [ELIN:DramaCustomSequence.Build]
+            // -> if (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
+            // -> -> if ((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction) ... else
+            return
+                (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
+                &&
+                !((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction)
+            ;
+        }
+
         #endregion
 
         #region DramaCustomSequence
@@ -141,6 +159,20 @@ namespace Elin.Plugin.Main.Models.Impl
                 return false;
             }
 
+            if (lang == LanguageId.Bye)
+            {
+                var c = BuildArgumentCharacter;
+                if (c == null)
+                {
+                    ModHelper.LogNotExpected($"{nameof(BuildArgumentCharacter)} is null");
+                    return true;
+                }
+
+                // 会話終了前に実は… を表示させる
+                // 勧誘可能で未勧誘のNPCに対して、さようならの前に実は… の選択肢を差し込む
+                // と、コメント書いたはいいが、 Step("_factionOther") の選択肢を勧誘だけ(あと戻る系？)突っ込むの無理くね？
+            }
+
             return true;
         }
 
@@ -171,37 +203,29 @@ namespace Elin.Plugin.Main.Models.Impl
                 }
             }
 
-            // 選択肢最上部に勧誘メッセージを差し込む
-            // Talk は内部メソッドなので正攻法でパッチあてられず、_Talk の言語は変換済みなのでここで無理やり差し込む
-            if (CurrentOtherSequence == OtherSequence.Prepare)
-            {
-                // 実は… からの選択肢構築の開始時点で実施する
-                // これは 
-                // 1. Step("_factionOther");
-                // 2. Talk("what", StepDefault);
-                // の順序で呼ばれることに完全に依存している
+            //// 選択肢最上部に勧誘メッセージを差し込む
+            //// Talk は内部メソッドなので正攻法でパッチあてられず、_Talk の言語は変換済みなのでここで無理やり差し込む
+            //if (CurrentOtherSequence == OtherSequence.Prepare)
+            //{
+            //    // 実は… からの選択肢構築の開始時点で実施する
+            //    // これは 
+            //    // 1. Step("_factionOther");
+            //    // 2. Talk("what", StepDefault);
+            //    // の順序で呼ばれることに完全に依存している
 
-                // [Elin]
-                // -> if (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
-                // if ((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction) ... else
-                try
-                {
-                    var canInvite =
-                        (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
-                        &&
-                        !((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction)
-                    ;
-                    if (canInvite)
-                    {
-                        ModHelper.LogDev("[add] LanguageId.InviteHome, JumpId.HookInviteHome");
-                        instance.Choice2(LanguageId.InviteHome, JumpId.HookInviteHome);
-                    }
-                }
-                finally
-                {
-                    CurrentOtherSequence = OtherSequence.None;
-                }
-            }
+            //    try
+            //    {
+            //        if (CanInvite(c))
+            //        {
+            //            ModHelper.LogDev("[add] LanguageId.InviteHome, JumpId.HookInviteHome");
+            //            instance.Choice2(LanguageId.InviteHome, JumpId.HookInviteHome);
+            //        }
+            //    }
+            //    finally
+            //    {
+            //        CurrentOtherSequence = OtherSequence.None;
+            //    }
+            //}
 
             return true;
         }
