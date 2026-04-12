@@ -1,11 +1,11 @@
 {
   "$schema": "./dev-items/Plugin.schema.json",
   "package": {
-    "title": "ユーザーに表示される Mod 名",
-    "id": "replace.with.your.mod.id",
-    "author": "作者",
+    "title": "MovingActually",
+    "id": "sk.movingactually",
+    "author": "sk",
     "loadPriority": 100,
-    "elinVersion": "0.23.287",
+    "elinVersion": "0.23.295",
     "description": [
       "説明1行目",
       "説明2行目"
