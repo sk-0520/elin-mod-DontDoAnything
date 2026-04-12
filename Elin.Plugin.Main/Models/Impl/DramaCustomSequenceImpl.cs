@@ -10,32 +10,11 @@ namespace Elin.Plugin.Main.Models.Impl
 
         private static class LanguageId
         {
-            ///// <summary>
-            ///// 共に暮らさないか
-            ///// </summary>
-            ///// <remarks>Lang!General: daInvite</remarks>
-            //public const string InviteHome = "daInvite";
-
             /// <summary>
             /// もう待機する必要はない
             /// </summary>
             /// <remarks>Lang!General: enableMove</remarks>
             public const string EnableMove = "enableMove";
-
-            ///// <summary>
-            ///// なんだ？ 的なの。
-            ///// </summary>
-            ///// <remarks>
-            ///// <para>どこで定義されてるんだこれ。</para>
-            ///// <para>とりあえずこのクラスに突っ込んでおく。</para>
-            ///// </remarks>
-            //public const string What = "what";
-
-            ///// <summary>
-            ///// さようなら。
-            ///// </summary>
-            ///// <remarks>Lang!General: bye</remarks>
-            //public const string Bye = "bye";
 
             /// <summary>
             /// 仲間に誘う
@@ -121,7 +100,7 @@ namespace Elin.Plugin.Main.Models.Impl
             /// <summary>
             /// 実は… が選ばれた状態。
             /// </summary>
-            Prepare,
+            Start,
         }
 
         #endregion
@@ -135,17 +114,17 @@ namespace Elin.Plugin.Main.Models.Impl
 
         #region function
 
-        //private static bool CanInvite(Chara c)
-        //{
-        //    // [ELIN:DramaCustomSequence.Build]
-        //    // -> if (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
-        //    // -> -> if ((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction) ... else
-        //    return
-        //        (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
-        //        &&
-        //        !((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction)
-        //    ;
-        //}
+        private static bool CanEnableMove(Chara c)
+        {
+            // [ELIN:DramaCustomSequence.Build]
+            // -> if (c.IsPCParty) ... else if (!c.noMove)
+            var result =
+                !c.IsPCParty
+                &&
+                !c.noMove
+            ;
+            return result;
+        }
 
         private static bool CanJoinParty(Chara c)
         {
@@ -206,20 +185,6 @@ namespace Elin.Plugin.Main.Models.Impl
             // 特定のセリフを選択肢に表示させないようにしたりジャンプ先加工したり、忙しい子
             ModHelper.LogDev($"Choice2Prefix: lang={lang}, idJump={idJump}");
 
-            //if (lang == LanguageId.InviteHome)
-            //{
-            //    // フックした「共に暮らさないか」が指定されている場合は Elin 側の正式なジャンプIDに差し替え
-            //    if (idJump == JumpId.HookInviteHome)
-            //    {
-            //        idJump = JumpId.InviteHome;
-            //        ModHelper.LogDev($"[hook] {nameof(idJump)}: {JumpId.HookInviteHome} -> {idJump}");
-            //        return true;
-            //    }
-
-            //    ModHelper.LogDev($"[ignore] {lang}, {idJump}");
-            //    return false;
-            //}
-
             if (lang == LanguageId.EnableMove)
             {
                 // フックした「もう待機する必要はない」が指定されている場合は Elin 側の正式なジャンプIDに差し替え
@@ -276,20 +241,6 @@ namespace Elin.Plugin.Main.Models.Impl
                 return true;
             }
 
-            //if (lang == LanguageId.Bye)
-            //{
-            //    var c = BuildArgumentCharacter;
-            //    if (c == null)
-            //    {
-            //        ModHelper.LogNotExpected($"{nameof(BuildArgumentCharacter)} is null");
-            //        return true;
-            //    }
-
-            //    // 会話終了前に実は… を表示させる
-            //    // 勧誘可能で未勧誘のNPCに対して、さようならの前に実は… の選択肢を差し込む
-            //    // と、コメント書いたはいいが、 Step("_factionOther") の選択肢を勧誘だけ(あと戻る系？)突っ込むの無理くね？
-            //}
-
             return true;
         }
 
@@ -308,21 +259,16 @@ namespace Elin.Plugin.Main.Models.Impl
             // ここで待機してほしい Choice("disableMove", "_disableMove"); の選択肢と位置を合わせるための無理やり感
             if (idJump == JumpId.SleepBeside)
             {
-                // [ELIN:DramaCustomSequence.Build]
-                // -> if (c.IsPCParty) ... else if (!c.noMove)
-                if (!c.IsPCParty)
+                if (CanEnableMove(c))
                 {
-                    if (c.noMove)
-                    {
-                        ModHelper.LogDev("[add] LanguageId.EnableMove, JumpId.HookEnableMove");
-                        instance.Choice2(LanguageId.EnableMove, JumpId.HookEnableMove);
-                    }
+                    ModHelper.LogDev("[add] LanguageId.EnableMove, JumpId.HookEnableMove");
+                    instance.Choice2(LanguageId.EnableMove, JumpId.HookEnableMove);
                 }
             }
 
             // 選択肢最上部にメッセージを差し込む
             // Talk は内部メソッドなので正攻法でパッチあてられず、_Talk の言語は変換済みなのでここで無理やり差し込む
-            if (CurrentOtherSequence == OtherSequence.Prepare)
+            if (CurrentOtherSequence == OtherSequence.Start)
             {
                 // 実は… からの選択肢構築の開始時点で実施する
                 // これは 
@@ -334,6 +280,7 @@ namespace Elin.Plugin.Main.Models.Impl
                 {
                     if (CanJoinParty(c))
                     {
+                        // 仲間に誘う
                         ModHelper.LogDev("[add] LanguageId.JoinParty, JumpId.HookJoinParty");
                         instance.Choice2(LanguageId.JoinParty, JumpId.HookJoinParty);
                     }
@@ -341,11 +288,13 @@ namespace Elin.Plugin.Main.Models.Impl
                     {
                         if (CanMakeHome(c))
                         {
+                            // この土地に移住して欲しい
                             ModHelper.LogDev("[add] LanguageId.LeaveParty, JumpId.HookLeaveParty");
                             instance.Choice2(LanguageId.MakeHome, JumpId.HookMakeHome);
                         }
                         if (CanLeaveParty(c))
                         {
+                            // ホームで待機しろ
                             ModHelper.LogDev("[add] LanguageId.LeaveParty, JumpId.HookLeaveParty");
                             instance.Choice2(LanguageId.LeaveParty.lang(c.homeZone.Name), JumpId.HookLeaveParty);
                         }
@@ -363,7 +312,7 @@ namespace Elin.Plugin.Main.Models.Impl
         public static void StepPostfix(DramaCustomSequence instance, string step)
         {
             CurrentOtherSequence = step == JumpId.FactionOther
-                ? OtherSequence.Prepare
+                ? OtherSequence.Start
                 : OtherSequence.None
             ;
             ModHelper.LogDev($"StepPostfix: step={step}, CurrentOtherSequence={CurrentOtherSequence}");
