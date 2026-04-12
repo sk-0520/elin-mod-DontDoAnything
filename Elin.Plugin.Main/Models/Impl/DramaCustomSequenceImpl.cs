@@ -120,16 +120,36 @@ namespace Elin.Plugin.Main.Models.Impl
 
         #region function
 
-        private static bool CanInvite(Chara c)
+        //private static bool CanInvite(Chara c)
+        //{
+        //    // [ELIN:DramaCustomSequence.Build]
+        //    // -> if (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
+        //    // -> -> if ((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction) ... else
+        //    return
+        //        (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
+        //        &&
+        //        !((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction)
+        //    ;
+        //}
+
+        private static bool CanJoinParty(Chara c)
         {
             // [ELIN:DramaCustomSequence.Build]
-            // -> if (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
-            // -> -> if ((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction) ... else
-            return
-                (!c.IsPCFaction && c.affinity.CanInvite() && !EClass._zone.IsInstance && c.c_bossType == BossType.none)
+            // -> if (c.IsHomeMember())
+            // -> -> if (!c.IsPCParty && c.memberType != FactionMemberType.Livestock && c.trait.CanJoinParty)
+            var result =
+                c.IsHomeMember()
                 &&
-                !((c.trait.IsUnique || c.IsGlobal) && c.GetInt(111) == 0 && !c.IsPCFaction)
+                !c.IsPCParty && c.memberType != FactionMemberType.Livestock && c.trait.CanJoinParty
             ;
+            return result;
+        }
+        private static bool CanLeaveParty(Chara c)
+        {
+            // [ELIN:DramaCustomSequence.Build]
+            // -> if (c.IsPCParty && !c.isSummon)
+            // -> -> if (c.host == null && c.homeZone != null)
+            return false;
         }
 
         #endregion
@@ -173,6 +193,20 @@ namespace Elin.Plugin.Main.Models.Impl
                 {
                     idJump = JumpId.EnableMove;
                     ModHelper.LogDev($"[hook] {nameof(idJump)}: {JumpId.HookEnableMove} -> {idJump}");
+                    return true;
+                }
+
+                ModHelper.LogDev($"[ignore] {lang}, {idJump}");
+                return false;
+            }
+
+            if (lang == LanguageId.JoinParty)
+            {
+                // フックした「仲間に誘う」が指定されている場合は Elin 側の正式なジャンプIDに差し替え
+                if (idJump == JumpId.HookJoinParty)
+                {
+                    idJump = JumpId.JoinParty;
+                    ModHelper.LogDev($"[hook] {nameof(idJump)}: {JumpId.HookJoinParty} -> {idJump}");
                     return true;
                 }
 
@@ -224,29 +258,29 @@ namespace Elin.Plugin.Main.Models.Impl
                 }
             }
 
-            //// 選択肢最上部に勧誘メッセージを差し込む
-            //// Talk は内部メソッドなので正攻法でパッチあてられず、_Talk の言語は変換済みなのでここで無理やり差し込む
-            //if (CurrentOtherSequence == OtherSequence.Prepare)
-            //{
-            //    // 実は… からの選択肢構築の開始時点で実施する
-            //    // これは 
-            //    // 1. Step("_factionOther");
-            //    // 2. Talk("what", StepDefault);
-            //    // の順序で呼ばれることに完全に依存している
+            // 選択肢最上部にメッセージを差し込む
+            // Talk は内部メソッドなので正攻法でパッチあてられず、_Talk の言語は変換済みなのでここで無理やり差し込む
+            if (CurrentOtherSequence == OtherSequence.Prepare)
+            {
+                // 実は… からの選択肢構築の開始時点で実施する
+                // これは 
+                // 1. Step("_factionOther");
+                // 2. Talk("what", StepDefault);
+                // の順序で呼ばれることに完全に依存している
 
-            //    try
-            //    {
-            //        if (CanInvite(c))
-            //        {
-            //            ModHelper.LogDev("[add] LanguageId.InviteHome, JumpId.HookInviteHome");
-            //            instance.Choice2(LanguageId.InviteHome, JumpId.HookInviteHome);
-            //        }
-            //    }
-            //    finally
-            //    {
-            //        CurrentOtherSequence = OtherSequence.None;
-            //    }
-            //}
+                try
+                {
+                    if (CanJoinParty(c))
+                    {
+                        ModHelper.LogDev("[add] LanguageId.JoinParty, JumpId.HookJoinParty");
+                        instance.Choice2(LanguageId.JoinParty, JumpId.HookJoinParty);
+                    }
+                }
+                finally
+                {
+                    CurrentOtherSequence = OtherSequence.None;
+                }
+            }
 
             return true;
         }
