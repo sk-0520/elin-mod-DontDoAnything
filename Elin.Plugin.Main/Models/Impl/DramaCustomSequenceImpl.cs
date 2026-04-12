@@ -10,11 +10,11 @@ namespace Elin.Plugin.Main.Models.Impl
 
         private static class LanguageId
         {
-            /// <summary>
-            /// 共に暮らさないか
-            /// </summary>
-            /// <remarks>Lang!General: daInvite</remarks>
-            public const string InviteHome = "daInvite";
+            ///// <summary>
+            ///// 共に暮らさないか
+            ///// </summary>
+            ///// <remarks>Lang!General: daInvite</remarks>
+            //public const string InviteHome = "daInvite";
 
             /// <summary>
             /// もう待機する必要はない
@@ -22,20 +22,31 @@ namespace Elin.Plugin.Main.Models.Impl
             /// <remarks>Lang!General: enableMove</remarks>
             public const string EnableMove = "enableMove";
 
-            /// <summary>
-            /// なんだ？ 的なの。
-            /// </summary>
-            /// <remarks>
-            /// <para>どこで定義されてるんだこれ。</para>
-            /// <para>とりあえずこのクラスに突っ込んでおく。</para>
-            /// </remarks>
-            public const string What = "what";
+            ///// <summary>
+            ///// なんだ？ 的なの。
+            ///// </summary>
+            ///// <remarks>
+            ///// <para>どこで定義されてるんだこれ。</para>
+            ///// <para>とりあえずこのクラスに突っ込んでおく。</para>
+            ///// </remarks>
+            //public const string What = "what";
+
+            ///// <summary>
+            ///// さようなら。
+            ///// </summary>
+            ///// <remarks>Lang!General: bye</remarks>
+            //public const string Bye = "bye";
 
             /// <summary>
-            /// さようなら。
+            /// 仲間に誘う
             /// </summary>
-            /// <remarks>Lang!General: bye</remarks>
-            public const string Bye = "bye";
+            /// <remarks>Lang!General: daJoinParty</remarks>
+            public const string JoinParty = "daJoinParty";
+            /// <summary>
+            /// ホームで待機しろ
+            /// </summary>
+            /// <remarks>Lang!General: daLeaveParty</remarks>
+            public const string LeaveParty = "daLeaveParty";
         }
 
         private static class JumpId
@@ -61,14 +72,24 @@ namespace Elin.Plugin.Main.Models.Impl
             public const string HookEnableMove = EnableMove + "@" + Package.Id;
 
             /// <summary>
-            /// 共に暮らさないか のジャンプID。
+            /// 仲間に誘う のジャンプID。
             /// </summary>
-            public const string InviteHome = "_invite";
+            public const string JoinParty = "_joinParty";
             /// <summary>
-            /// <see cref="InviteHome"/> に対して差し込むMod用のジャンプID。
+            /// <see cref="JoinParty"/> に対して差し込むMod用のジャンプID。
             /// </summary>
-            /// <remarks>このID自体は Mod 内で使用を完結させ、表示用に Elin を経由することにはなるが最終的には <see cref="InviteHome"/> を指すようにすること。</remarks>
-            public const string HookInviteHome = InviteHome + "@" + Package.Id;
+            /// <remarks>このID自体は Mod 内で使用を完結させ、表示用に Elin を経由することにはなるが最終的には <see cref="JoinParty"/> を指すようにすること。</remarks>
+            public const string HookJoinParty = JoinParty + "@" + Package.Id;
+
+            /// <summary>
+            /// ホームで待機しろ のジャンプID。
+            /// </summary>
+            public const string LeaveParty = "_leaveParty";
+            /// <summary>
+            /// <see cref="LeaveParty"/> に対して差し込むMod用のジャンプID。
+            /// </summary>
+            /// <remarks>このID自体は Mod 内で使用を完結させ、表示用に Elin を経由することにはなるが最終的には <see cref="LeaveParty"/> を指すようにすること。</remarks>
+            public const string HookLeaveParty = LeaveParty + "@" + Package.Id;
 
         }
 
@@ -131,19 +152,19 @@ namespace Elin.Plugin.Main.Models.Impl
             // 特定のセリフを選択肢に表示させないようにしたりジャンプ先加工したり、忙しい子
             ModHelper.LogDev($"Choice2Prefix: lang={lang}, idJump={idJump}");
 
-            if (lang == LanguageId.InviteHome)
-            {
-                // フックした「共に暮らさないか」が指定されている場合は Elin 側の正式なジャンプIDに差し替え
-                if (idJump == JumpId.HookInviteHome)
-                {
-                    idJump = JumpId.InviteHome;
-                    ModHelper.LogDev($"[hook] {nameof(idJump)}: {JumpId.HookInviteHome} -> {idJump}");
-                    return true;
-                }
+            //if (lang == LanguageId.InviteHome)
+            //{
+            //    // フックした「共に暮らさないか」が指定されている場合は Elin 側の正式なジャンプIDに差し替え
+            //    if (idJump == JumpId.HookInviteHome)
+            //    {
+            //        idJump = JumpId.InviteHome;
+            //        ModHelper.LogDev($"[hook] {nameof(idJump)}: {JumpId.HookInviteHome} -> {idJump}");
+            //        return true;
+            //    }
 
-                ModHelper.LogDev($"[ignore] {lang}, {idJump}");
-                return false;
-            }
+            //    ModHelper.LogDev($"[ignore] {lang}, {idJump}");
+            //    return false;
+            //}
 
             if (lang == LanguageId.EnableMove)
             {
@@ -159,19 +180,19 @@ namespace Elin.Plugin.Main.Models.Impl
                 return false;
             }
 
-            if (lang == LanguageId.Bye)
-            {
-                var c = BuildArgumentCharacter;
-                if (c == null)
-                {
-                    ModHelper.LogNotExpected($"{nameof(BuildArgumentCharacter)} is null");
-                    return true;
-                }
+            //if (lang == LanguageId.Bye)
+            //{
+            //    var c = BuildArgumentCharacter;
+            //    if (c == null)
+            //    {
+            //        ModHelper.LogNotExpected($"{nameof(BuildArgumentCharacter)} is null");
+            //        return true;
+            //    }
 
-                // 会話終了前に実は… を表示させる
-                // 勧誘可能で未勧誘のNPCに対して、さようならの前に実は… の選択肢を差し込む
-                // と、コメント書いたはいいが、 Step("_factionOther") の選択肢を勧誘だけ(あと戻る系？)突っ込むの無理くね？
-            }
+            //    // 会話終了前に実は… を表示させる
+            //    // 勧誘可能で未勧誘のNPCに対して、さようならの前に実は… の選択肢を差し込む
+            //    // と、コメント書いたはいいが、 Step("_factionOther") の選択肢を勧誘だけ(あと戻る系？)突っ込むの無理くね？
+            //}
 
             return true;
         }

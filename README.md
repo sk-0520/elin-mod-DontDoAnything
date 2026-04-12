@@ -10,12 +10,14 @@
 
 | ja | Book | Sheet | id |
 | --- | --- | --- | --- |
-| 共に暮らさないか | Lang | General | daInvite |
+| ~~共に暮らさないか~~ | Lang | General | daInvite |
 | もう待機する必要はない | General | Lang | enableMove |
 | 実は… | Lang | General | daFactionOther |
 | ここで待機して欲しい | Lang | General | disableMove |
+| 仲間に誘う | Lang | General | daJoinParty |
+| ホームで待機しろ (#1) | Lang | General | daLeaveParty |
 
-## 共に暮らさないか
+## ~~共に暮らさないか~~
 
 ```csharp
 //DramaCustomSequence.cs
@@ -23,6 +25,10 @@ Choice2("daInvite", "_invite");
 
 Step("_invite");
 ```
+
+ともくらは無理。実は…の道は険しい。
+
+設定でこれを抑制することは可能だが、この Mod では設定を作りたくない
 
 ## もう待機する必要はない
 
