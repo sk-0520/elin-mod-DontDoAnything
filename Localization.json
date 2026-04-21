@@ -5,9 +5,9 @@
   "format": {
   },
   "config": {
-    "Abc": {
-      "JP": "JP",
-      "EN": "EN"
+    "MoveHoromeMommy": {
+      "JP": "ホロメ信仰時のママーを「実は…」に引っ越すか。",
+      "EN": "Move Horome Mommy to 'Actually...' when Holome is worshiped."
     }
   }
 }
