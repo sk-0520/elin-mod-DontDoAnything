@@ -442,7 +442,7 @@ namespace Elin.Plugin.Generator
                     return args[0].Value + "." + args[1].Value;
                 }
             }
-            return string.Empty;
+            return $"[{args}] {args.Length}" + string.Empty;
         }
 
         private IEnumerable<string> GenerateBindSources(SourceProductionContext context, Compilation compilation, SourceBuilder sourceBuilder, string parentSection, INamedTypeSymbol typeSymbol, IPropertySymbol? propertySymbol)
@@ -733,10 +733,21 @@ namespace Elin.Plugin.Generator
                     })
                 )}}
 
+                internal enum PluginConfigDescriptionTarget
+                {
+                    Config,
+                    General,
+                }
+
                 [{{sourceBuilder.ToCode<System.AttributeUsageAttribute>()}}({{sourceBuilder.ToCode(AttributeTargets.Property)}}, AllowMultiple = false)]
                 internal sealed class {{GeneratorConstants.GeneratePluginConfigDescriptionAttributeName}}: {{sourceBuilder.ToCode<System.Attribute>()}}
                 {
-                    public {{GeneratorConstants.GeneratePluginConfigDescriptionAttributeName}}({{sourceBuilder.ToCode<Type>()}} target, string descriptionName)
+                    public {{GeneratorConstants.GeneratePluginConfigDescriptionAttributeName}}(string propertyName, PluginConfigDescriptionTarget target)
+                    {
+                        //NOP
+                    }
+
+                    public {{GeneratorConstants.GeneratePluginConfigDescriptionAttributeName}}(string configName)
                     {
                         //NOP
                     }

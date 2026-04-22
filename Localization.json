@@ -1,6 +1,10 @@
 {
   "$schema": "./dev-items/Localization.schema.json",
   "general": {
+    "Abc": {
+        "JP": "あいうえお",
+        "EN": "Abcdefg"
+    }
   },
   "format": {
   },
@@ -8,6 +12,10 @@
     "MoveHoromeMommy": {
       "JP": "ホロメ信仰時のママーを「実は…」に引っ越すか。",
       "EN": "Move Horome Mommy to 'Actually...' when Holome is worshiped."
+    },
+    "Xyz": {
+      "JP": "わおん",
+      "EN": "xyz"
     }
   }
 }

@@ -12,8 +12,14 @@ namespace Elin.Plugin.Main.Models.Settings
         /// <summary>
         /// ホロメ信仰時のママーを「実は…」に引っ越すか。
         /// </summary>
-        [GeneratePluginConfigDescription(typeof(PluginLocalizationConfig), nameof(PluginLocalizationConfig.MoveHoromeMommy))]
+        [GeneratePluginConfigDescription(nameof(PluginLocalizationConfig.MoveHoromeMommy))]
         public virtual bool MoveHoromeMommy { get; set; } = false;
+
+        [GeneratePluginConfigDescription(nameof(PluginLocalizationGeneral.Abc), PluginConfigDescriptionTarget.General)]
+        public virtual bool Abc { get; set; } = false;
+
+        [GeneratePluginConfigDescription(nameof(PluginLocalizationConfig.Xyz), PluginConfigDescriptionTarget.Config)]
+        public virtual bool Xyz { get; set; } = false;
 
         #endregion
     }
