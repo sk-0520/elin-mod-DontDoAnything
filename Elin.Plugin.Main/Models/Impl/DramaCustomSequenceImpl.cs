@@ -297,7 +297,8 @@ namespace Elin.Plugin.Main.Models.Impl
             var c = BuildArgumentCharacter;
             if (c == null)
             {
-                ModHelper.LogNotExpected($"{nameof(BuildArgumentCharacter)} is null. lang={lang}, idJump={idJump}, cancel={cancel}");
+                // Build 後になにか処理されている可能性があるので開発時のログだけ残す方針にした, 再現できなくてわっからんのよ
+                ModHelper.LogDev($"{nameof(BuildArgumentCharacter)} is null. lang={lang}, idJump={idJump}, cancel={cancel}");
                 return true;
             }
 
